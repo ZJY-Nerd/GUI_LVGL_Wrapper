@@ -81,9 +81,6 @@ static bool button_is_pressed(uint8_t id);
     lv_indev_t *indev_button;
 #endif
 
-//static int32_t encoder_diff;
-//static lv_indev_state_t encoder_state;
-
 /**********************
  *      MACROS
  **********************/
@@ -304,35 +301,33 @@ static void mouse_get_xy(lv_coord_t * x, lv_coord_t * y)
 #endif
 
 #if __LV_USE_KEYPAD_INDEV__
-#include "basic_gpio.h"
-#include "key.h"
+/* input your key header file here */
+// #include "key.h"
 
 /*------------------
  * Keypad
  * -----------------*/
 static key_mode_e g_key_mode = KEY_MODE_NAV;
 static const lv_key_t g_key_mode_map[KEY_MODE_MAX][KEY_NUM][2] = {
-    // ===================== 模式0：导航模式 =====================
-    {
-        // {LV_KEY_NONE,    LV_KEY_NONE},     
-        {LV_KEY_UP,     LV_KEY_LONG_UP},       // 上键：短按=上选，长按=无
-        {LV_KEY_DOWN,   LV_KEY_LONG_DOWN},       // 下键：短按=下选，长按=无
-        {LV_KEY_LEFT,   LV_KEY_LONG_LEFT},       // 左键：短按=前翻页，长按=无
-        {LV_KEY_RIGHT,   LV_KEY_LONG_RIGHT},      // 右键：短按=后翻页，长按=无
-        {LV_KEY_OK,     LV_KEY_LONG_OK},    // OK键：短按=确认，长按
-        {LV_KEY_ESC,    LV_KEY_NONE},       // 返回键：短按=返回，长按=无
-        {LV_KEY_HOME,   LV_KEY_LONG_HOME}   // HOME键：短按=主页，长按=开关机
+    /* ========== Navigation mode ===== */
+    {   
+        {LV_KEY_UP,     LV_KEY_LONG_UP},       
+        {LV_KEY_DOWN,   LV_KEY_LONG_DOWN}, 
+        {LV_KEY_LEFT,   LV_KEY_LONG_LEFT},  
+        {LV_KEY_RIGHT,   LV_KEY_LONG_RIGHT},   
+        {LV_KEY_OK,     LV_KEY_LONG_OK},   
+        {LV_KEY_ESC,    LV_KEY_NONE},     
+        {LV_KEY_HOME,   LV_KEY_LONG_HOME}   
     },
-    // ===================== 模式1：编辑模式 =====================
+    /* =========== Edit mode =========== */
     {
-        // {LV_KEY_NONE,    LV_KEY_NONE}, 
-        {LV_KEY_UP,     LV_KEY_LONG_UP},    // 上键：短按=值+，长按=值连+
-        {LV_KEY_DOWN,   LV_KEY_LONG_DOWN},  // 下键：短按=值-，长按=值连-
-        {LV_KEY_LEFT,   LV_KEY_LONG_LEFT},  // 左键：短按=移位+，长按=移位连+
-        {LV_KEY_RIGHT,  LV_KEY_LONG_RIGHT}, // 右键：短按=移位-，长按=移位连-
-        {LV_KEY_OK,     LV_KEY_LONG_OK},    // OK键：短按=确认，长按
-        {LV_KEY_ESC,    LV_KEY_NONE},       // 返回键：短按=取消设置，长按=无
-        {LV_KEY_HOME,   LV_KEY_LONG_HOME}   // HOME键：短按=主页，长按=开关机
+        {LV_KEY_UP,     LV_KEY_LONG_UP},    
+        {LV_KEY_DOWN,   LV_KEY_LONG_DOWN},  
+        {LV_KEY_LEFT,   LV_KEY_LONG_LEFT},  
+        {LV_KEY_RIGHT,  LV_KEY_LONG_RIGHT}, 
+        {LV_KEY_OK,     LV_KEY_LONG_OK},    
+        {LV_KEY_ESC,    LV_KEY_NONE},      
+        {LV_KEY_HOME,   LV_KEY_LONG_HOME}   
     }
 };
 
@@ -342,35 +337,48 @@ static void keypad_init(void)
     /*Your code comes here*/
 }
 
-/*Will be called by the library to read the mouse*/
+/*Will be called by the library to read the keypad*/
 static void keypad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {    
+    /**
+     * @note u8KeyId:    Stored in the low  four bits of u8KeyInfo 
+     * @note u8KeyState: Stored in the high four bits of u8KeyInfo
+     *                0: short press
+     *                1: long press
+     */
     uint8_t u8KeyInfo  = key_get_value();
     uint8_t u8KeyId    = u8KeyInfo & 0x0F;
-    uint8_t u8KeyState = (u8KeyInfo >> 4) & 0x0F; // 0: 短按，1: 长按
-
+    uint8_t u8KeyState = (u8KeyInfo >> 4) & 0x0F;
+    
     data->state = LV_INDEV_STATE_REL;
-    data->key   = 0;  /* 默认无按键，防止残留值被误读为 LV_KEY_ENTER */
+    data->key   = 0; 
 
 	if(u8KeyId < KEY_NUM)
     {
-        data->key = g_key_mode_map[g_key_mode][u8KeyId][u8KeyState];
+        data->key   = g_key_mode_map[g_key_mode][u8KeyId][u8KeyState];
         data->state = LV_INDEV_STATE_PR;
     }
 }
 
-/* 设置键盘工作模式 */
-void ui_set_key_mode(key_mode_e mode) 
+GUI_LV_WEAK uint8_t key_get_value(void)
+{
+    GUI_LV_UNUSED(0);
+    /*Your code comes here*/
+    return 0;
+}
+
+/* Set the keyboard operation mode */
+void gui_lv_set_key_mode(key_mode_e mode) 
 {
     if(mode < KEY_MODE_MAX) {
         g_key_mode = mode;
     } else {
-        g_key_mode = KEY_MODE_NAV; // 越界默认切回导航模式
+        g_key_mode = KEY_MODE_NAV;
     }
 }
 
-/* 获取键盘工作模式 */
-key_mode_e ui_get_key_mode(void)
+/* Get the keyboard operation mode */
+key_mode_e gui_lv_get_key_mode(void)
 {
     return g_key_mode;
 }	

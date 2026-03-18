@@ -56,12 +56,27 @@ extern "C" {
     #ifndef __BUF_PX_SIZE__
     #   define __BUF_PX_SIZE__              19200
     #endif
+
     // <o> Buffering mode
     //     <0=>One buffer
     //     <1=>Two buffer
     //     <2=>Double buffer
     #ifndef __LV_DISP_USE_BUFFER__
     #   define __LV_DISP_USE_BUFFER__       1
+    #endif
+
+    // <o> Is DMA used for display flushing?
+    //     <0=>DMA Disable
+    //     <1=>DMA Enable
+    #ifndef __LV_PORT_DISP_USE_DMA__
+    #   define __LV_PORT_DISP_USE_DMA__ 0
+    #endif
+
+    // <o> Is GPU used for filling operations?
+    //     <0=>GPU Disable
+    //     <1=>GPU Enable
+    #ifndef __LV_DISP_HELPER_USE_GPU__
+    #   define __LV_DISP_HELPER_USE_GPU__     0
     #endif
 // </h>
 

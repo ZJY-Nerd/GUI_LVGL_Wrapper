@@ -36,10 +36,14 @@
  */
 
 /*================================= INCLUDES =================================*/
-#include "gui_lvgl.h"
+#if defined(__GUI_LVGL_WRAPPER__)
+#   include <gui_lvgl.h>
+#else
+#   include "./gui_lvgl.h"
+#endif
 
 #if defined(__RTE_GUI_LVGL_WRAPPER__)
-#include "template/gui_scene_include.h"
+#include "./template/gui_scene_include.h"
 #endif
 
 /*================================== MACROS ==================================*/

@@ -18,11 +18,12 @@ extern "C" {
  *      INCLUDES
  *********************/
 #include "lvgl.h"
+#include "./gui_lv_utils.h"
 
 #ifdef __GUI_LVGL_WRAPPER__
 #   include <gui_lv_conf.h>
 #else
-#   include "gui_lv_conf.h"
+#   include "./gui_lv_conf.h"
 #endif
 
 /*********************
@@ -42,8 +43,8 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 typedef enum {
-    KEY_MODE_NAV,      // 导航模式
-    KEY_MODE_EDIT,     // 编辑模式
+    KEY_MODE_NAV,      /*!< Navigation mode */
+    KEY_MODE_EDIT,     /*!< Edit mode       */
     KEY_MODE_MAX       
 } key_mode_e;
 
@@ -71,16 +72,8 @@ typedef enum {
  **********************/
 void lv_port_indev_init(void);
 
-/**
- * 以下是键盘输入设备的模式设置和获取函数声明。
- *  - ui_key_mode_set()：设置当前键盘工作模式，参数为key_mode_e枚举值。
- *  - ui_key_mode_get()：获取当前键盘工作模式，返回值为key_mode_e枚举值。
- *  - 键盘工作模式定义在key_mode_e枚举中，目前包含导航模式和编辑模式两种。
- *  -       这些函数的实现需要在lv_port_indev_template.c中完成，
- *    以便在键盘输入处理逻辑中根据当前模式应用不同的按键映射规则。
- */
-extern void ui_set_key_mode(key_mode_e mode);
-extern key_mode_e ui_get_key_mode(void);
+void gui_lv_set_key_mode(key_mode_e mode);
+key_mode_e gui_lv_get_key_mode(void);
 
 /**********************
  *      MACROS

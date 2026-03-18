@@ -17,20 +17,19 @@
 ****************************************************************************/
 
 /*================================= INCLUDES =================================*/
+#include "./core/gui_lv_scene_manage.h"
 #include <stddef.h>
 #include <string.h>
-#include "gui_lv_scene_manage.h"
 
 #ifdef __EMB_BASIC_GENERAL_LIB__
 #   include "emb_list.h"
 #else
-#   include "core/_internal/emb_list.h"
+#   include "./core/_internal/emb_list.h"
 #endif
 
 /*================================== MACROS ==================================*/
 #define GUI_SCENE_HISTORY_DEPTH   8      /* Scene back-navigation stack depth  */
 #define GUI_PAGE_NODE_POOL_SIZE   8      /* Max simultaneous page nodes        */
-
 
 /*================================== TYPES ===================================*/
 
@@ -484,7 +483,7 @@ static void scene_push_history(gui_scene_id_t eId)
 static lv_obj_t *scene_create_root(void)
 {
     return gui_lv_container_init(NULL, 0, 0,
-                             UI_SCREEN_WIDTH, UI_SCREEN_HEIGHT,
+                             GUI_LV_SCREEN_WIDTH, GUI_LV_SCREEN_HEIGHT,
                              rgb(0, 0, 0), false);
 }
 

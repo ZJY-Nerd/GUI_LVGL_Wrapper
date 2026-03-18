@@ -34,7 +34,6 @@
 #   include "lv_port_indev_template.h"
 #endif
 
-
 #ifdef   __cplusplus
 extern "C" {
 #endif
@@ -81,12 +80,12 @@ extern lv_indev_t *enc_indev;
 #   define FALL_THROUGH        ((void)0)
 #endif
 
-#if !defined(GUI_WEAK)
-#   if defined(__GNUC__) || defined(__clang__) || defined(__CC_ARM)          \
+#if !defined(GUI_LV_WEAK)
+#   if defined(__GNUC__) || defined(__clang__) || defined(__CC_ARM)            \
         || defined(__ARMCC_VERSION)
-#       define GUI_WEAK __attribute__((weak))
+#       define GUI_LV_WEAK __attribute__((weak))
 #   else
-#       define GUI_WEAK
+#       define GUI_LV_WEAK
 #   endif
 #endif
 

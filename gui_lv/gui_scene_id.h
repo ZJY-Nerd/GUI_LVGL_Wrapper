@@ -31,13 +31,8 @@ extern "C" {
 #endif
 /*================================== TYPES ===================================*/
 typedef enum {
-
     /* scene id to begin */
-    GUI_SCENE_OPTION,
-    GUI_SCENE_BASIC_MEAS,
-    GUI_SCENE_SORT_MEAS,
-    GUI_SCENE_HIST_REC,
-    GUI_SCENE_SETTINGS,
+
     /* scene id to end   */
 
     GUI_SCENE_MAX
@@ -45,9 +40,8 @@ typedef enum {
 
 
 typedef enum {
-
     /* page id to begin */
-    GUI_PAGE_DATA_VIEW,
+    
     /* page id to end   */
 
     GUI_SCENE_PAGE_MAX
