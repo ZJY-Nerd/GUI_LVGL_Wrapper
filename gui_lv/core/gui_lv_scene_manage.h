@@ -22,7 +22,7 @@
 /*================================= INCLUDES =================================*/
 #include "./core/gui_lv_common.h"
 
-#ifdef __GUI_LVGL_WRAPPER__
+#ifdef __GUI_LVGL_WRAPPER_CONF__
 #   include <gui_scene_id.h>
 #else
 #   include "./gui_scene_id.h"

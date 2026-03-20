@@ -39,11 +39,11 @@
 #if defined(__GUI_LVGL_WRAPPER__)
 #   include <gui_lvgl.h>
 #else
-#   include "gui_lvgl.h"
+#   include "./gui_lvgl.h"
 #endif
 
-#if defined(__RTE_GUI_LVGL_WRAPPER__)
-#include "./template/gui_scene_include.h"
+#if defined(__RTE_Acceleration_GUI_LVGL_SCENE__)
+#   include "./template/gui_scene_include.h"
 #endif
 
 /*================================== MACROS ==================================*/
@@ -96,7 +96,7 @@ static void __gui_common_style_init(void)
  */
 static void __gui_all_scene_init(void)
 {
-#if defined(__RTE_GUI_LVGL_WRAPPER__)
+#if defined(__RTE_Acceleration_GUI_LVGL_SCENE__)
     __GUI_LV_ALL_SCENE_INIT();
 #else
     /*-------------------- user code begin: scene register --------------------*/

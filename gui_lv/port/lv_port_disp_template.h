@@ -22,8 +22,8 @@ extern "C" {
 #	include "lvgl/lvgl.h"
 #endif
 
-#ifdef __GUI_LVGL_WRAPPER__
-#   include <gui_lv_conf.h>
+#ifdef __GUI_LVGL_WRAPPER_CONF__
+// #   include <gui_lv_conf.h>
 #else
 #   include "./gui_lv_conf.h"
 #endif

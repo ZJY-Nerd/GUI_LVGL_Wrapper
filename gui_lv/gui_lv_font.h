@@ -2,7 +2,7 @@
 #define __UI_FONT_H__
 
 /*================================= INCLUDES =================================*/
-#ifdef __GUI_LVGL_WRAPPER__
+#ifdef __GUI_LVGL_WRAPPER_CONF__
 #   include <gui_lv_sys_data.h>
 #else
 #   include "./gui_lv_sys_data.h"

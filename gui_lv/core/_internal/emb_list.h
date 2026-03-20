@@ -16,8 +16,8 @@
 *                                                                           *
 ****************************************************************************/
 
-#ifndef __GUI_LV_HELPER_LIST_H__
-#define __GUI_LV_HELPER_LIST_H__
+#ifndef __EMB_LIST_H__
+#define __EMB_LIST_H__
 
 /*================================= INCLUDES =================================*/
 #include "./gui_lv_utils.h"
@@ -40,9 +40,9 @@ typedef unsigned long emb_size_t;
 
 #define EMB_LIST_CHECK_NODE(node)                                              \
     do {                                                                       \
-        GUI_ASSERT((node) != NULL);                                            \
-        GUI_ASSERT((node)->prev != NULL);                                      \
-        GUI_ASSERT((node)->next != NULL);                                      \
+        GUI_LV_ASSERT((node) != NULL);                                         \
+        GUI_LV_ASSERT((node)->prev != NULL);                                   \
+        GUI_LV_ASSERT((node)->next != NULL);                                   \
     } while (0)
 
 /*================================== TYPES ===================================*/
@@ -51,8 +51,8 @@ typedef unsigned long emb_size_t;
  * @note    Naming follows emb_list convention with emb_list_ prefix.
  */
 typedef struct emb_list_t {
-    struct emb_list_t *prev;   /* 指向上一个节点 */
-    struct emb_list_t *next;   /* 指向下一个节点 */
+    struct emb_list_t *prev; 
+    struct emb_list_t *next;
 } emb_list_t;
 
 
@@ -60,7 +60,7 @@ typedef struct emb_list_t {
 /** @brief  Initialize a list head (points to itself = empty). */
 static inline void emb_list_init(emb_list_t *list)
 {
-    GUI_ASSERT(list != NULL);
+    GUI_LV_ASSERT(list != NULL);
     list->prev = list;
     list->next = list;
 }
@@ -68,7 +68,7 @@ static inline void emb_list_init(emb_list_t *list)
 /** @brief  Check if list is empty. */
 static inline bool emb_list_is_empty(const emb_list_t *head)
 {
-    GUI_ASSERT(head != NULL);
+    GUI_LV_ASSERT(head != NULL);
     return (head->next == head);
 }
 
@@ -76,7 +76,7 @@ static inline bool emb_list_is_empty(const emb_list_t *head)
 static inline void emb_list_add_tail(emb_list_t *list, emb_list_t *head)
 {
     EMB_LIST_CHECK_NODE(head);
-    GUI_ASSERT(list != NULL);
+    GUI_LV_ASSERT(list != NULL);
     list->next         = head;
     list->prev         = head->prev;
     head->prev->next   = list;
@@ -94,7 +94,7 @@ static inline void emb_list_del(emb_list_t *list)
 }
 
 /** @brief  Get the last (tail) node, or NULL if empty. */
-static inline emb_list_t *emb_list_tail(const emb_list_t *head)
+static inline emb_list_t *emb_list_get_tail(const emb_list_t *head)
 {
     if(emb_list_is_empty(head)) return NULL;
     return head->prev;
@@ -104,4 +104,4 @@ static inline emb_list_t *emb_list_tail(const emb_list_t *head)
 #ifdef   __cplusplus
 }
 #endif
-#endif /* __GUI_LV_HELPER_LIST_H__ */
+#endif /* __EMB_LIST_H__ */

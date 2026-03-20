@@ -20,7 +20,7 @@
 #define __GUI_LV_UTILS_H__
 
 /*================================= INCLUDES =================================*/
-#if __GUI_LVGL_WRAPPER__
+#if __GUI_LVGL_WRAPPER_CONF__
 #   include <gui_lv_conf.h>
 #else  
 #   include "./gui_lv_conf.h"
@@ -113,13 +113,7 @@ extern lv_indev_t *enc_indev;
  *----------------------------------------------------------------------------*/
 #define GUI_LV_UNUSED(__VAR)        (void)(__VAR)
 
-#define GUI_ASSERT(_expr)   \
-    do {                    \
-        if (!(_expr))       \
-        {                   \
-            while(1);       \
-        }                   \
-    } while(0)
+#define GUI_LV_ASSERT(_expr)        do { if(!(_expr)){while(1);} } while(0)
 
 /*----------------------------------------------------------------------------*
  * Array                                                                      *
@@ -128,13 +122,13 @@ extern lv_indev_t *enc_indev;
  * @brief Get the number of elements in a real array.
  * @note This macro only works for arrays, not pointers.
  */
-#define GUI_LV_ARRAY_SIZE(a)            (sizeof(a) / sizeof((a)[0]))
+#define GUI_LV_ARRAY_SIZE(a)        (sizeof(a) / sizeof((a)[0]))
 
 /**
  * @brief Get the column count of a two-dimensional array.
  * @note This macro only works for two-dimensional arrays.
  */
-#define GUI_LV_ARRAY_COLS(a)            (sizeof((a)[0]) / sizeof((a)[0][0]))
+#define GUI_LV_ARRAY_COLS(a)        (sizeof((a)[0]) / sizeof((a)[0][0]))
 
 /*----------------------------------------------------------------------------*
  * Color                                                                      *
@@ -178,12 +172,12 @@ extern lv_indev_t *enc_indev;
 /*----------------------------------------------------------------------------*
  * Font                                                                       *
  *----------------------------------------------------------------------------*/
-#define FONT(_font, _size)      EMB_CONNECT(&lv_font_, _font, _, _size)
+#define FONT(_font, _size)          EMB_CONNECT(&lv_font_, _font, _, _size)
 
 /*----------------------------------------------------------------------------*
  * Image                                                                      *
  *----------------------------------------------------------------------------*/
-#define IMAGE(_img)             EMB_CONNECT(&lv_img_, _img)
+#define IMAGE(_img)                 EMB_CONNECT(&lv_img_, _img)
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*----------------------------------------------------------------------------*
@@ -295,32 +289,28 @@ extern lv_indev_t *enc_indev;
  *----------------------------------------------------------------------------*/
 #define GUI_LV_GROUP_FOCUS_NEXT(void)                                          \
 	do {                                                                       \
-		lv_indev_t *indev = lv_indev_get_act();                                \
-		lv_group_t *group = indev->group;                                      \
+		lv_group_t *group = LV_INDEV_KEYPAD->group;                            \
 		lv_group_focus_next(group);                                            \
 	} while (0)
     
 #define GUI_LV_GROUP_FOCUS_PREV(void)                                          \
 	do {                                                                       \
-		lv_indev_t *indev = lv_indev_get_act();                                \
-		lv_group_t *group = indev->group;                                      \
+		lv_group_t *group = LV_INDEV_KEYPAD->group;                            \
 		lv_group_focus_prev(group);                                            \
 	} while (0)
 
 #define GUI_LV_INDEV_BIND_GROUP(_group)                                        \
 	do {                                                                       \
-		extern lv_indev_t *indev_keypad;                                       \
-		if (indev_keypad != NULL) {                                            \
-			lv_indev_set_group(indev_keypad, (_group));                        \
+		if (LV_INDEV_KEYPAD != NULL) {                                         \
+			lv_indev_set_group(LV_INDEV_KEYPAD, (_group));                     \
 		}                                                                      \
 	} while (0)
 
 #define GUI_LV_GROUP_GET_FOCUSED_OBJ()                                         \
 	({                                                                         \
-		extern lv_indev_t *indev_keypad;                                       \
 		lv_obj_t *_ptObj = NULL;                                               \
-		if (indev_keypad != NULL) {                                            \
-			_ptObj = lv_group_get_focused(indev_keypad->group);                \
+		if (LV_INDEV_KEYPAD != NULL) {                                         \
+			_ptObj = lv_group_get_focused(LV_INDEV_KEYPAD->group);             \
 		}                                                                      \
 		_ptObj;                                                                \
 	})

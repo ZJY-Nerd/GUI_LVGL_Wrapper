@@ -1,223 +1,215 @@
-# 在 CMSIS-Pack（RTE）中使用 User Scene Template（`<name>` / `<NAME>`）
+# 在 CMSIS-Pack（RTE）中使用 GUI_LVGL_Wrapper 的 Scene 模板（`<name>` / `<NAME>`）
 
-本文说明如何在 **CMSIS-Pack / RTE（例如 Keil MDK 的 Run-Time Environment）** 中使用 Arm-2D 提供的 **User Scene Template** 来创建“自定义命名”的 Scene（即把模板里的 `<name>` / `<NAME>` 替换成你的场景名）。
+本文说明如何在 **CMSIS-Pack / RTE（例如 Keil MDK 的 Run-Time Environment）** 中使用 GUI_LVGL_Wrapper 提供的两套 Scene 模板来创建场景：
 
-> 关联模板文件：
-> - `Helper/template/arm_2d_scene_template.h`
-> - `Helper/template/arm_2d_scene_template.c`
->
-> 另外，RTE 里通过“Scene 组件实例数”自动生成 `scene0/scene1/...` 使用的是另一套模板：
-> - `Helper/template/arm_2d_scene.h`
-> - `Helper/template/arm_2d_scene.c`
+- **RTE 组件实例法（`%Instance%`）**：由 RTE 按实例数自动生成 `gui_scene_0/1/2/...`
+- **User Code Template 法（`<name>` / `<NAME>`）**：按业务命名创建 `gui_scene_<name>`，并在入口处手动注册
+
+> 关联文件（本仓库路径）：
+> - User Scene Template：
+>   - `template/gui_scene_template.h`
+>   - `template/gui_scene_template.c`
+> - RTE Scene 实例模板：
+>   - `template/gui_scene.h`
+>   - `template/gui_scene.c`
+> - RTE 聚合头（按宏自动 include/init）：
+>   - `template/gui_scene_include.h`
 
 ---
 
 ## 1. 两种“在 Pack 里添加 Scene”的方式（先搞清楚差别）
 
-在 Pack/RTE 场景下，你通常会遇到两种添加 Scene 的方法：
+在 Pack/RTE 场景下，通常有两种添加 Scene 的方式：
 
-1) **RTE 组件实例法（sceneN）**
-- 在 RTE 配置里把 `Acceleration::Arm-2D Helper::Scene` 的实例数调大。
-- 工具会在 `RTE/Acceleration/` 下自动生成 `arm_2d_scene_0.c/.h`、`arm_2d_scene_1.c/.h` ...
-- 这些 scene 会被聚合头文件 `Helper/Include/arm_2d_scenes.h` 自动按宏开关包含。
-- 调用方式是 `arm_2d_scene0_init(&DISP0_ADAPTER);` 这种 **数字命名**。
+### 1.1 RTE 组件实例法（`gui_scene_%Instance%`）
 
-2) **User Code Template 法（自定义命名 `<name>`）**（本文重点）
-- 在 IDE 里通过“User Scene Template”生成两份文件（或在 VS Code 里手工复制）。
-- 你需要把模板中的 `<name>`/`<NAME>` 替换为你的命名。
-- 这些文件 **不会** 被 `arm_2d_scenes.h` 自动包含，你需要自己 `#include "arm_2d_scene_<name>.h"`。
+- 在 RTE 配置里启用并设置 `GUI_LVGL_Wrapper::Scene` 的实例数（最多 20）。
+- RTE 会生成 `gui_scene_0.c/.h`、`gui_scene_1.c/.h` ...（生成目录通常在 `RTE/` 下）。
+- `template/gui_scene_include.h` 会依据 `__RTE_Acceleration_GUI_LVGL_SceneN__` 宏自动 `#include "gui_scene_N.h"` 并提供 `__GUI_LV_ALL_SCENE_INIT()`。
+- `gui_lvgl.c` 在 `#if defined(__RTE_Acceleration_GUI_LVGL_SCENE__)` 下会调用 `__GUI_LV_ALL_SCENE_INIT()` 自动完成所有实例的注册。
 
-如果你的目标是“我想要一个叫 `arm_2d_scene_my_scene.c/h` 的场景”，请选择 **方法 2**。
+这套方式的特点是：**scene 的“注册入口函数”固定为数字命名**：`gui_lv_scene_0_init()`、`gui_lv_scene_1_init()` ...
+
+### 1.2 User Code Template 法（自定义命名 `gui_scene_<name>`）
+
+- 在 IDE 里通过 User Code Template 生成一对模板文件（或在 VS Code 里手工复制）。
+- 你需要把模板中的 `<name>` / `<NAME>`（必要）以及 `%Instance%`（按需要）替换为你的命名。
+- 这类“自定义命名”的 scene **不会被** `template/gui_scene_include.h` 自动包含/初始化：
+  - 如果你不启用 `GUI_LVGL_Wrapper::Scene` 组件，则在 `gui_lvgl.c` 的 `__gui_all_scene_init()` 用户代码区手动调用你的 `gui_lv_scene_<name>_init()` 注册即可。
+  - 如果你同时启用了 `GUI_LVGL_Wrapper::Scene`，你仍可额外手动注册自定义 scene，但需要你在工程入口里再补一次调用（属于进阶混用用法）。
+
+如果你的目标是“我想要一个叫 `gui_scene_main_menu.c/h`，内部函数名也更可读”的场景，选择 **方法 1.2**。
 
 ---
 
 ## 2. 前置条件（RTE 里要勾哪些组件）
 
-User Scene Template 的代码主体被以下宏包住：
+最小依赖：
 
-- `RTE_Acceleration_Arm_2D_Helper_PFB`
+- `GUI_LVGL_Wrapper::Core`
+- `GUI_LVGL_Wrapper::USER`（提供可配置的 `gui_lvgl.c` / `gui_scene_id.h` 等）
 
-因此你至少需要在 RTE 中启用：
+可选：
 
-- `Acceleration::Arm-2D::Core`
-- `Acceleration::Arm-2D Helper::PFB`
-- `Acceleration::Arm-2D Helper::Display Adapter`（至少 1 个实例，例如 Adapter0）
+- `GUI_LVGL_Wrapper::Helper`（如果你使用 helper 的控件/样式 API）
 
-模板自带“演示绘制代码”，还会用到：
+当你使用 **RTE 组件实例法** 时，还需要：
 
-- `Acceleration::Arm-2D Extras::Controls`（提供 `draw_round_corner_box()` 等示例控件）
-- `Acceleration::Arm-2D Extras::LCD ASCII Printf`（提供 `arm_lcd_text_set_font()` / `arm_lcd_puts()` / `ARM_2D_FONT_6x8` 等）
+- `GUI_LVGL_Wrapper::Scene`（并设置实例数）
 
-如果你不想引入上述 Extras，也可以直接把模板里的演示绘制与文字输出段落删掉，仅保留场景骨架。
+当你使用 **User Code Template 法** 时，确保能在 IDE 里看到模板项（通常来源于 `GUI_LVGL_Wrapper::Template` 组件）。如果列表里没有该模板，先确认已安装该 Pack 且已启用 `GUI_LVGL_Wrapper::USER`（必要时也启用 `GUI_LVGL_Wrapper::Template`）。
 
 ---
 
 ## 3. 生成/添加模板文件
 
-### 3.1 在 Keil MDK（RTE 工程）里添加
+### 3.1 在 Keil MDK（RTE 工程）里生成
+
+**方式 A：RTE 组件实例法**
+
+- 打开 RTE 配置窗口
+- 选择 `GUI_LVGL_Wrapper::Scene`
+- 把实例数调到你需要的数量
+
+然后到生成的 `gui_scene_N.c/.h` 文件里填充 UI 逻辑，并把 `<NAME>` 改成你实际的 scene ID（见第 4 节）。
+
+**方式 B：User Code Template 法**
 
 - 在 Project 视图里选中一个 Group
 - 右键 → **Add New Item to Group**
 - 找到 **User Code Template**
-- 在 Acceleration 分类下选择 **User Scene Template**
-- 点击 Add
+- 选择 GUI_LVGL_Wrapper 提供的 `gui_scene_template.c/.h` 模板项
 
-随后会把 `arm_2d_scene_template.c` / `arm_2d_scene_template.h` 加到你的工程目录（位置取决于你当前 Group 的路径/设置）。
+随后会把模板文件加入工程（位置取决于你当前 Group 的路径/设置）。建议立即按第 4 节完成重命名与占位符替换。
 
 ### 3.2 在 VS Code / 非 MDK 环境手工添加
 
 - 直接复制：
-  - `Helper/template/arm_2d_scene_template.h`
-  - `Helper/template/arm_2d_scene_template.c`
+  - `template/gui_scene_template.h`
+  - `template/gui_scene_template.c`
 - 放到你的工程源码目录（确保编译系统会编译 `.c`、并能找到 `.h`）
 
 ---
 
-## 4. `<name>` / `<NAME>` 替换与重命名规则（核心）
+## 4. `<name>` / `<NAME>` / `%Instance%` 替换与重命名规则（核心）
 
-模板里有两类占位符：
+模板里涉及三类“占位符/约定”：
 
-- `<name>`：**小写/下划线**风格（建议 `snake_case`），用于：
-  - 文件名：`arm_2d_scene_<name>.h/.c`
-  - 符号名：`user_scene_<name>_t`、`arm_2d_scene_<name>_init()`、`__arm_2d_scene_<name>_init()` 等
+### 4.1 `<name>`（小写/下划线，建议 `snake_case`）
 
-- `<NAME>`：**大写/下划线**风格（建议全大写），用于：
-  - include guard：`__ARM_2D_SCENE_<NAME>_H__`
-  - OOC 控制宏：`__USER_SCENE_<NAME>_IMPLEMENT__` / `__USER_SCENE_<NAME>_INHERIT__`
+用于：
 
-推荐做法（避免多个 Scene 冲突）：
+- 静态回调/私有符号：`__on_scene_<name>_draw()`、`__on_scene_<name>_load()`、`__on_scene_<name>_depose()` 等
 
-1) 先把文件重命名为你的场景名（可选但强烈建议）
-- `arm_2d_scene_template.h` → `arm_2d_scene_my_scene.h`
-- `arm_2d_scene_template.c` → `arm_2d_scene_my_scene.c`
+### 4.2 `<NAME>`（大写/下划线，建议全大写）
 
-2) 全局替换占位符
-- `<name>` → `my_scene`
-- `<NAME>` → `MY_SCENE`
+用于：
 
-3) 检查 `.c` 顶部 include 是否匹配
+- Scene ID：`GUI_SCENE_<NAME>`（你必须在 `gui_scene_id.h` 里定义它）
+- 头文件 include guard：`__GUI_SCENE_<NAME>_H__`
 
-模板原始写法类似：
+### 4.3 `%Instance%`（实例号：0/1/2/...，或你希望的后缀）
 
-```c
-#define __USER_SCENE_<NAME>_IMPLEMENT__
-#include "arm_2d_scene_<name>.h"
-```
+用于：
 
-替换后应为：
+- 对外注册入口函数名：`gui_lv_scene_%Instance%_init()`
 
-```c
-#define __USER_SCENE_MY_SCENE_IMPLEMENT__
-#include "arm_2d_scene_my_scene.h"
-```
+在 **RTE 组件实例法** 中：
 
-> 注意：`__USER_SCENE_<NAME>_IMPLEMENT__` 只应该在 **本 Scene 的 `.c` 文件**里定义一次。
+- `%Instance%` 由 RTE 自动替换为 0/1/2/...（不要手改）
+
+在 **User Code Template 法** 中：
+
+- 你需要自己决定 `%Instance%` 最终是什么：
+  - **推荐（自定义命名）**：把 `%Instance%` 也替换为 `<name>`，得到 `gui_lv_scene_<name>_init()`
+  - **保持与实例法一致**：把 `%Instance%` 替换为数字（0/1/2/...），得到 `gui_lv_scene_0_init()` 这种形式
 
 ---
 
-## 5. 在应用中初始化并显示 Scene
+## 5. 典型流程（创建一个名为 `main_menu` 的 Scene）
 
-### 5.1 最小调用方式
+下面以 `main_menu` 为例，演示 User Code Template 的推荐改法。
 
-在你的 `main.c`（或系统初始化代码）里：
+### 5.1 新建/重命名文件
+
+- `gui_scene_template.c` → `gui_scene_main_menu.c`
+- `gui_scene_template.h` → `gui_scene_main_menu.h`
+
+### 5.2 全局替换占位符
+
+- `<name>` → `main_menu`
+- `<NAME>` → `MAIN_MENU`
+- `%Instance%` → `main_menu`
+
+替换完成后，你会得到：
+
+- 头文件 include guard：`__GUI_SCENE_MAIN_MENU_H__`
+- 注册入口：`void gui_lv_scene_main_menu_init(void);`
+- scene ID：`.eId = GUI_SCENE_MAIN_MENU`
+
+### 5.3 在 `gui_scene_id.h` 中添加 Scene ID
+
+在 `gui_scene_id.h` 的 `gui_scene_id_t` enum 里加入：
 
 ```c
-#include "arm_2d_helper.h"
-#include "arm_2d_disp_adapters.h"
-#include "arm_2d_scene_my_scene.h"    /* 你的自定义 scene */
+GUI_SCENE_MAIN_MENU,
+```
 
-int main(void)
+并确保它位于 `GUI_SCENE_MAX` 之前。
+
+### 5.4 在入口里注册并设置开机场景
+
+如果你**不启用** `GUI_LVGL_Wrapper::Scene` 组件（即不走实例法），在 `gui_lvgl.c` 的用户代码区：
+
+```c
+static void __gui_sys_data_init(void)
 {
-    arm_2d_init();
+    gui_lv_set_boot_scene_id(GUI_SCENE_MAIN_MENU);
+}
 
-    disp_adapter0_init();
-
-    /* 创建/初始化并追加到 Scene Player FIFO */
-    arm_2d_scene_my_scene_init(&DISP0_ADAPTER);
-
-    /* 让 Player 切换到 FIFO 的下一个场景（通常是你刚追加的那个） */
-    arm_2d_scene_player_switch_to_next_scene(&DISP0_ADAPTER);
-
-    while (1) {
-        disp_adapter0_task();
-    }
+static void __gui_all_scene_init(void)
+{
+    /* user code begin: scene register */
+    gui_lv_scene_main_menu_init();
+    /* user code end  : scene register */
 }
 ```
 
-### 5.2 关于“是否必须调用 switch_to_next_scene()”
+随后调用 `gui_lv_init()`，框架会在注册完 scene 后自动执行：
 
-Scene 是被“追加”到 `Scene Player FIFO` 里的：
+- `gui_lv_scene_switch(gui_lv_get_boot_scene_id())`
 
-- 如果你的 Display Adapter **启用了默认场景**，那么新追加的 scene 往往只是“下一个可用场景”，需要调用一次 `arm_2d_scene_player_switch_to_next_scene()` 才能显示。
-- 如果你在 Display Adapter 配置里 **禁用了默认场景**，那么你追加的第一个 scene 可能会立刻成为当前 scene，此时不一定需要额外 switch。
-
-由于不同工程模板对“默认 scene”的策略不同，最稳妥做法是：
-
-- 初始化后显式调用一次 `arm_2d_scene_player_switch_to_next_scene()`。
+也就是显示你设置的开机场景。
 
 ---
 
-## 6. Scene 实例生命周期（自动分配 vs 用户分配）
+## 6. 常见问题与排查
 
-`arm_2d_scene_<name>_init()` 是一个宏，最终会调用：
+### 6.1 编译报错：`GUI_SCENE_xxx` 未定义
 
-```c
-user_scene_<name>_t *__arm_2d_scene_<name>_init(arm_2d_scene_player_t *ptDispAdapter,
-                                               user_scene_<name>_t *ptScene);
-```
+- 检查是否已在 `gui_scene_id.h` 的 `gui_scene_id_t` 里添加对应枚举项（且在 `GUI_SCENE_MAX` 之前）
+- 检查场景文件里 `.eId = GUI_SCENE_<NAME>` 是否已把 `<NAME>` 替换成实际名称
 
-用法有两种：
+### 6.2 编译报错：源码里还残留 `<name>` / `<NAME>` / `%Instance%`
 
-1) **传 NULL（自动分配）**
-- `arm_2d_scene_my_scene_init(&DISP0_ADAPTER);`
-- 内部会从 scratch memory 分配 `user_scene_my_scene_t`
-- 在 `fnDepose` 回调中自动释放
+- 说明替换没做全；建议对工程全局搜索 `<name>`、`<NAME>`、`%Instance%` 并逐一替换
 
-2) **传入你自己管理的对象（用户分配）**
+### 6.3 链接报错：找不到 `gui_lv_scene_xxx_init`
 
-```c
-static user_scene_my_scene_t s_tMyScene;
-arm_2d_scene_my_scene_init(&DISP0_ADAPTER, &s_tMyScene);
-```
+- 检查对应 `.c` 文件是否已加入工程并参与编译
+- 检查头文件声明与 `.c` 定义的函数名是否一致（尤其是 `%Instance%` 的替换策略）
 
-- 模板内部会设置 `bUserAllocated = true`
-- `fnDepose` 不会释放这块内存
-- 你必须保证 `s_tMyScene` 的生命周期覆盖整个 scene 使用期
+### 6.4 scene 已注册但启动显示为空
+
+- 确认 `__gui_sys_data_init()` 中的 `gui_lv_set_boot_scene_id()` 传入的 scene ID 合法（小于 `GUI_SCENE_MAX`）
+- 确认 `__gui_all_scene_init()` 在 `gui_lv_scene_switch()` 之前完成了注册（正常情况下 `gui_lv_init()` 已保证顺序）
+- 确认你的 `__on_scene_<name>_draw()` 里确实创建了控件/布局
 
 ---
 
-## 7. 常见问题与排查
+## 7. 何时用实例法，何时用 `<name>` 模板
 
-### 7.1 调用了 `arm_2d_scene_<name>_init()`，但链接报找不到符号
+- 你想让 **RTE 自动生成/聚合/初始化** N 个 scene → 用 `GUI_LVGL_Wrapper::Scene`（`gui_scene_%Instance%`）
+- 你想要 **按业务命名文件与内部回调函数**，并更可控地手动注册 → 用 `gui_scene_template`（`<name>` / `<NAME>`）
 
-优先检查：
-
-- 你的 `.c` 文件是否真的被加入工程并参与编译/链接
-- RTE 是否启用了 `Acceleration::Arm-2D Helper::PFB`（否则模板代码块会被 `#if defined(RTE_Acceleration_Arm_2D_Helper_PFB)` 排除）
-
-### 7.2 编译通过但链接报 `arm_lcd_*` / `ARM_2D_FONT_6x8` 未定义
-
-这是因为模板演示代码使用了 LCD printf 能力。
-
-- 方案 A：在 RTE 勾选 `Acceleration::Arm-2D Extras::LCD ASCII Printf`
-- 方案 B：删除 scene 绘制函数里那段 `arm_lcd_text_*` 与 `arm_lcd_puts()` 的演示输出
-
-### 7.3 编译报 `draw_round_corner_box()` 等未声明/未定义
-
-- 在 RTE 勾选 `Acceleration::Arm-2D Extras::Controls`
-- 或者删除模板演示绘制段落，只保留你自己的绘制逻辑
-
-### 7.4 自定义命名的 scene 为什么没被 `arm_2d_scenes.h` 自动包含？
-
-`Helper/Include/arm_2d_scenes.h` 只会按 `RTE_Acceleration_Arm_2D_SceneN` 这些宏去 `#include "arm_2d_scene_N.h"`。
-
-User Scene Template（`<name>`）生成的文件名不是 `arm_2d_scene_N.*`，也不会自动受 RTE Scene 实例宏控制，所以需要你手动 include。
-
----
-
-## 8. 附：何时用 RTE 的 `sceneN`，何时用 `<name>`
-
-- 你想让 **RTE 自动生成** scene 文件、并用 `arm_2d_scenes.h` 自动聚合 → 用 `sceneN`
-- 你想要 **可读性更强、按业务命名**（例如 `my_scene`, `boot_logo`, `home`）→ 用 `<name>`
-
-两者本质都是“把 scene 追加到同一个 scene player FIFO”，可以混用。
+两者都基于同一个场景管理框架（`gui_lv_scene_register()` / `gui_lv_scene_switch()`），可以按工程需要选择或混用。

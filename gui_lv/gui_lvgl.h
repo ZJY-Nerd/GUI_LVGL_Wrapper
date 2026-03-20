@@ -36,11 +36,10 @@
 #include "./core/gui_lv_scene_manage.h"
 #include "./helper/include/gui_lv_helper.h"
 
-#ifdef __GUI_LVGL_WRAPPER__
+#ifdef __GUI_LVGL_WRAPPER_CONF__
 #   include <gui_scene_id.h>
 #   include <gui_lv_font.h>
 #   include <gui_lv_sys_data.h>
-#   include "./template/gui_scene_include.h"
 #else
 #   include "./gui_scene_id.h"
 #   include "./gui_lv_font.h"

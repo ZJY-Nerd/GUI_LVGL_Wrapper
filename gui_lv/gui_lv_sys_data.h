@@ -22,7 +22,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if __GUI_LVGL_WRAPPER__
+#if __GUI_LVGL_WRAPPER_CONF__
 #   include <gui_scene_id.h>
 #else
 #   include "./gui_scene_id.h"

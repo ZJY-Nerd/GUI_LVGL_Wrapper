@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#ifdef __EMB_BASIC_GENERAL_LIB__
+#ifdef __EMB_UTILS_LIB_SUPPORTED__
 #   include "emb_list.h"
 #else
 #   include "./core/_internal/emb_list.h"
@@ -225,7 +225,7 @@ void gui_lv_scene_page_push(gui_scene_page_id_t ePageId)
     else
     {
         /* At a pushed page — save ALL groups' focus, then call pfDeinit */
-        emb_list_t *ptTailNode = emb_list_tail(&ptScene->tPageHead);
+        emb_list_t *ptTailNode = emb_list_get_tail(&ptScene->tPageHead);
         gui_page_node_t *ptTail = EMB_LIST_ENTRY(ptTailNode,
                              gui_page_node_t, tNode);
         focus_save_all_groups(ptScene, ptTail->ai16FocusIdx);
@@ -289,7 +289,7 @@ void gui_lv_scene_page_back(void)
     if(emb_list_is_empty(&ptScene->tPageHead)) return;
 
     /* ---- Get tail node (current page) ---- */
-    emb_list_t *ptTailNode = emb_list_tail(&ptScene->tPageHead);
+    emb_list_t *ptTailNode = emb_list_get_tail(&ptScene->tPageHead);
     gui_page_node_t *ptTail = EMB_LIST_ENTRY(ptTailNode,
                                              gui_page_node_t, tNode);
 
@@ -310,7 +310,7 @@ void gui_lv_scene_page_back(void)
     if(!emb_list_is_empty(&ptScene->tPageHead))
     {
         /* Previous is a pushed page — re-create it */
-        emb_list_t *ptPrevNode = emb_list_tail(&ptScene->tPageHead);
+        emb_list_t *ptPrevNode = emb_list_get_tail(&ptScene->tPageHead);
         gui_page_node_t *ptPrev = EMB_LIST_ENTRY(ptPrevNode,
                              gui_page_node_t, tNode);
 
@@ -640,7 +640,7 @@ static void page_chain_clear(gui_scene_id_t eId)
     /* Pop from tail to head — only call pfDeinit + free nodes */
     while(!emb_list_is_empty(&ptScene->tPageHead))
     {
-        emb_list_t *ptTailNode = emb_list_tail(&ptScene->tPageHead);
+        emb_list_t *ptTailNode = emb_list_get_tail(&ptScene->tPageHead);
         gui_page_node_t *ptTail = EMB_LIST_ENTRY(ptTailNode,
                              gui_page_node_t, tNode);
 

@@ -108,7 +108,6 @@
 
             <!-- Inject RTE_Components_h macro so code can detect the pack -->
             <RTE_Components_h>
-#define __GUI_LVGL_WRAPPER__        1
 #define __GUI_LVGL_WRAPPER_CORE__   1
             </RTE_Components_h>
         </component>
@@ -141,7 +140,6 @@
 
             <!-- Inject RTE_Components_h macro so code can detect the pack -->
             <RTE_Components_h>
-#define __GUI_LVGL_WRAPPER__        1
 #define __GUI_LVGL_WRAPPER_HELPER__ 1
             </RTE_Components_h>
         </component>
@@ -176,7 +174,6 @@
 
             <!-- Inject RTE_Components_h macro so code can detect the pack -->
             <RTE_Components_h>
-#define __GUI_LVGL_WRAPPER__        1
 #define __GUI_LVGL_WRAPPER_CONF__   1
             </RTE_Components_h>
         </component>
@@ -203,8 +200,8 @@
             </files>
 
             <RTE_Components_h>
-#define __RTE_GUI_LVGL_WRAPPER__    1
-#define __RTE_GUI_LVGL_Scene%Instance%__
+#define __RTE_Acceleration_GUI_LVGL_SCENE__    1
+#define __RTE_Acceleration_GUI_LVGL_Scene%Instance%__
             </RTE_Components_h>
         </component>
 
@@ -217,7 +214,7 @@
                 The RTE generator replaces %Instance% with 0,1,2,...
 
                 Wrapper entry:
-                - gui_lv_scene_%Instance%_init()
+                - gui_lv_scene_"name"_init()
             </description>
 
             <files>
